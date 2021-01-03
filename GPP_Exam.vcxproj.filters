@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Plugin.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="EBehaviorTree.cpp">
+      <Filter>EliteAI\EliteDecisionMaking\EliteBehaviorTree</Filter>
+    </ClCompile>
+    <ClCompile Include="EFiniteStateMachine.cpp">
+      <Filter>EliteAI\EliteDecisionMaking\EliteFiniteStateMachine</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Plugin.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Behaviours.h" />
+    <ClInclude Include="EBehaviorTree.h">
+      <Filter>EliteAI\EliteDecisionMaking\EliteBehaviorTree</Filter>
+    </ClInclude>
+    <ClInclude Include="EDecisionMaking.h">
+      <Filter>EliteAI\EliteDecisionMaking</Filter>
+    </ClInclude>
+    <ClInclude Include="EBlackboard.h">
+      <Filter>EliteAI\EliteData</Filter>
+    </ClInclude>
+    <ClInclude Include="Structs.h" />
+    <ClInclude Include="EFiniteStateMachine.h">
+      <Filter>EliteAI\EliteDecisionMaking\EliteFiniteStateMachine</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="EliteAI">
+      <UniqueIdentifier>{82246c9d-dce2-4ac0-8f8b-046114bdba7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EliteAI\EliteData">
+      <UniqueIdentifier>{06df0f37-411f-4f60-81d2-da07c32ac397}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EliteAI\EliteDecisionMaking">
+      <UniqueIdentifier>{c72ce0bb-1afe-42f1-b2d7-b2288f1c5606}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EliteAI\EliteDecisionMaking\EliteBehaviorTree">
+      <UniqueIdentifier>{51f17b3f-0da4-4528-83e7-c5db4fd36d6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EliteAI\EliteDecisionMaking\EliteFiniteStateMachine">
+      <UniqueIdentifier>{57a7d087-718f-4c11-9644-c4c2e3335ddc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
