@@ -136,10 +136,11 @@ void Plugin::Initialize(IBaseInterface* pInterface, PluginInfo& info)
 					}
 				)
 			}),
-
 				new BehaviorAction(ChangeToWander)
 		})
 	);
+	std::cout << "test";
+
 }
 
 
