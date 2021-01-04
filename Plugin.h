@@ -46,6 +46,7 @@ private:
 	RunMode m_RunMode{ RunMode::Seek };
 	std::vector<InventorySlots> m_Inventory;
 	std::vector<HouseInfo> m_housesToSkip;
+	std::vector<PointsOfInterestIsSkippable> m_Points;
 };
 
 //ENTRY

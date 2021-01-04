@@ -33,6 +33,97 @@ float distanceSingleDigit(float number1, float number2)
 //-----------------------------------------------------------------
 // Behaviors
 //-----------------------------------------------------------------
+bool NothingInFOV(Elite::Blackboard* pBlackboard)
+{
+	std::cout << "travelnot ";
+
+	vector<HouseInfo> houses;
+	AgentInfo OurAgent;
+	Elite::Vector2 target;
+	IExamInterface* pInterFace = nullptr;
+	bool isPathFinding;
+	Elite::Vector2 endGoal;
+	Elite::Vector2 LastPathPoint;
+	bool canLeaveHouse;
+	bool isInHouse;
+	std::vector<HouseInfo> housesToSkip;
+	int counter;
+	Elite::Vector2 LastKnownLocation;
+	Elite::Vector2 currentHouseEntrance;
+	std::vector<PointsOfInterestIsSkippable> pointsOfInterest;
+	auto dataAvailable = pBlackboard->GetData("Agent", OurAgent) && pBlackboard->GetData("HousesInFOV", houses)
+		&& pBlackboard->GetData("InterFace", pInterFace) && pBlackboard->GetData("IsPathFinding", isPathFinding)
+		&& pBlackboard->GetData("EndGoalPathFinding", endGoal) && pBlackboard->GetData("LastPathPointPos", LastPathPoint)
+		&& pBlackboard->GetData("CanLeaveHouse", canLeaveHouse) && pBlackboard->GetData("IsInHouse", isInHouse)
+		&& pBlackboard->GetData("HousesToSkip", housesToSkip) && pBlackboard->GetData("NodeCounterToLeaveHouse", counter)
+		&& pBlackboard->GetData("LastKnowLocationOutsideHoude", LastKnownLocation) && pBlackboard->GetData("HouseEntrance", currentHouseEntrance)
+		&& pBlackboard->GetData("pointsOfInterest", pointsOfInterest);
+
+	Elite::Vector2 currentTarget{ 0.0f,0.0f };
+
+	//if (Elite::Distance(OurAgent.Position, endGoal) < 2.0f)
+	//{
+	//	pBlackboard->ChangeData("IsInHouse", true);
+	//}
+
+	//if (isInHouse)
+	//{
+	//	//std::cout << "out";
+	//	pBlackboard->ChangeData("Target", LastKnownLocation);
+	//	return true;
+	//}
+
+	//if (isPathFinding)
+	//{
+	//	//pBlackboard->ChangeData("ShootingTarget",endGoal );
+	//	//pBlackboard->ChangeData("canShoot", bool{ true });
+	//	currentTarget = pInterFace->NavMesh_GetClosestPathPoint(endGoal);
+	//	if (currentTarget != endGoal)
+	//	{
+	//		//std::cout << "changes";
+	//		pBlackboard->ChangeData("LastPathPointPos", currentTarget);
+	//	}
+	//	pBlackboard->ChangeData("Target", currentTarget);
+	//	return true;
+	//}
+
+	//if (houses.size() == 0)
+	//{
+		float closestDistance{ 9999.f };
+		float closestHouse{ 0 };
+		bool canGoToHouse{ false };
+		for (int i = 0; i < pointsOfInterest.size(); i++)
+		{
+			if (!pointsOfInterest[i].canSkip)
+			{
+				float distance{ Elite::Distance(pointsOfInterest[i].location,OurAgent.Position) };
+				if (distance < closestDistance)
+				{
+					std::cout << "niet goed";
+					closestDistance = distance;
+					closestHouse = i;
+					canGoToHouse = true;
+				}
+			}
+		}
+		if (canGoToHouse)
+		{
+			pBlackboard->ChangeData("EndGoalPathFinding", pointsOfInterest[closestHouse].location);
+
+			currentTarget = pInterFace->NavMesh_GetClosestPathPoint(pointsOfInterest[closestHouse].location);
+			if (currentTarget != endGoal)
+			{
+				//std::cout << "changes";
+				pBlackboard->ChangeData("LastPathPointPos", currentTarget);
+			}
+			pBlackboard->ChangeData("Target", currentTarget);
+			//	pBlackboard->ChangeData("IsPathFinding", true);
+			return true;
+		}
+	//}
+	return false;
+}
+
 bool EnemyInFOV(Elite::Blackboard* pBlackboard)
 {
 
@@ -176,28 +267,34 @@ bool IsInHouse(Elite::Blackboard* pBlackboard)
 	bool isPathFinding;
 	Elite::Vector2 endGoal;
 	Elite::Vector2 LastPathPoint;
+	Elite::Vector2 currentHouseEntrance;
 	auto dataAvailable = pBlackboard->GetData("Agent", OurAgent) && pBlackboard->GetData("HousesInFOV", houses)
 		&& pBlackboard->GetData("InterFace", pInterFace) && pBlackboard->GetData("IsPathFinding", isPathFinding)
 		&& pBlackboard->GetData("EndGoalPathFinding", endGoal) && pBlackboard->GetData("LastPathPointPos", LastPathPoint)
-		&& pBlackboard->GetData("EnemiesInFOV", entities);
+		&& pBlackboard->GetData("EnemiesInFOV", entities) && pBlackboard->GetData("HouseEntrance", currentHouseEntrance);
+	
 	
 
 	if (houses.size() > 0)
 	{
 		if(distanceSingleDigit(houses[0].Center.x,OurAgent.Position.x) < houses[0].Size.x/2, distanceSingleDigit(houses[0].Center.y, OurAgent.Position.y) < houses[0].Size.y/2)
 		{
-			for (int i = 0; i < entities.size(); i++)
-			{
-				if (entities[i].Type == eEntityType::ITEM)
-				{
-				//	std::cout << "good";
-					pBlackboard->ChangeData("IsInHouse", true);
-					pBlackboard->ChangeData("Target", entities[i].Location);
-					return true;
-				}
-			}
+			//if (Elite::Distance(currentHouseEntrance, endGoal) < houses[0].Size.x)
+			//{
+			//	pBlackboard->ChangeData("HouseEntrance", OurAgent.Position);
+			//}
+			//for (int i = 0; i < entities.size(); i++)
+			//{
+			//	if (entities[i].Type == eEntityType::ITEM)
+			//	{
+			//	//	std::cout << "good";
+			//		pBlackboard->ChangeData("IsInHouse", true);
+			//		pBlackboard->ChangeData("Target", entities[i].Location);
+			//		return true;
+			//	}
+			//}
 			//std::cout << "good ";
-			pBlackboard->ChangeData("IsInHouse", true);
+			//pBlackboard->ChangeData("IsInHouse", true);
 			return false;
 		}
 	}
@@ -241,7 +338,7 @@ bool CanPickUpItem(Elite::Blackboard* pBlackboard)
 bool HousesInFOV(Elite::Blackboard* pBlackboard)
 {
 	//std::cout << "travel ";
-
+	
 	vector<HouseInfo> houses;
 	AgentInfo OurAgent;
 	Elite::Vector2 target;
@@ -254,24 +351,19 @@ bool HousesInFOV(Elite::Blackboard* pBlackboard)
 	std::vector<HouseInfo> housesToSkip;
 	int counter;
 	Elite::Vector2 LastKnownLocation;
+	Elite::Vector2 currentHouseEntrance;
+	std::vector<PointsOfInterestIsSkippable> pointsOfInterest;
 	auto dataAvailable = pBlackboard->GetData("Agent", OurAgent) && pBlackboard->GetData("HousesInFOV", houses)
 	&& pBlackboard->GetData("InterFace", pInterFace) && pBlackboard->GetData("IsPathFinding", isPathFinding)
 		&& pBlackboard->GetData("EndGoalPathFinding", endGoal) && pBlackboard->GetData("LastPathPointPos", LastPathPoint)
 		&& pBlackboard->GetData("CanLeaveHouse", canLeaveHouse) && pBlackboard->GetData("IsInHouse", isInHouse)
 	&& pBlackboard->GetData("HousesToSkip", housesToSkip) && pBlackboard->GetData("NodeCounterToLeaveHouse", counter)
-	&&	pBlackboard->GetData("LastKnowLocationOutsideHoude", LastKnownLocation);
+	&&	pBlackboard->GetData("LastKnowLocationOutsideHoude", LastKnownLocation) && pBlackboard->GetData("HouseEntrance", currentHouseEntrance)
+	&& pBlackboard->GetData("pointsOfInterest", pointsOfInterest);
 
 	
 	Elite::Vector2 currentTarget{ 0.0f,0.0f };
-
-
-	//if (isInHouse == false)
-	//{
-	//	pBlackboard->ChangeData("CanLeaveHouse", false);
-
-	//	return false;
-	//}
-
+	
 	if (houses.size() > 0)
 	{
 		for (int i = 0; i < housesToSkip.size(); i++)
@@ -281,79 +373,45 @@ bool HousesInFOV(Elite::Blackboard* pBlackboard)
 				return false;
 			}
 		}
-	}
-
-	if (canLeaveHouse)
-	{ 
-		//Elite::Vector2 OutsideGoal{};
-		//OutsideGoal.x = houses[0].Center.x;
-		//OutsideGoal.y = houses[0].Center.y + houses[0].Size.y;
-
-		Elite::Vector2 outsideTarget{ pInterFace->NavMesh_GetClosestPathPoint(LastKnownLocation) };
-
-		if (Elite::Distance(OurAgent.Position, outsideTarget) < 2.0f)
-		//if(!isInHouse)
+		pBlackboard->ChangeData("EndGoalPathFinding", houses[0].Center);
+		if (Elite::Distance(OurAgent.Position, endGoal) < 2.0f)
 		{
-				pBlackboard->ChangeData("CanLeaveHouse", false);
-				if (housesToSkip.size() == 0)
+			//disbaling all the points of interest of this house
+			for (int i = 0; i < pointsOfInterest.size(); i++)
+			{
+				if (distanceSingleDigit(houses[0].Center.x, pointsOfInterest[i].location.x) < houses[0].Size.x / 2 + 3.0f, distanceSingleDigit(houses[0].Center.y, pointsOfInterest[i].location.y) < houses[0].Size.y / 2 + 3.0f)
 				{
-					housesToSkip.push_back(houses[0]);
-					pBlackboard->ChangeData("HousesToSkip", housesToSkip);
+					pointsOfInterest[i].canSkip = true;
 				}
-				else
-				{
-					bool IsInVector{ false };
-					for (int i = 0; i < housesToSkip.size(); i++)
-					{
-						if (houses[0].Center == housesToSkip[i].Center)
-						{
-							IsInVector = true;
-						}
-					}
-					if (!IsInVector)
-					{
-						housesToSkip.push_back(houses[0]);
-						pBlackboard->ChangeData("HousesToSkip", housesToSkip);
-					}
-				}
-				pBlackboard->ChangeData("Target", LastKnownLocation);
-			pBlackboard->ChangeData("NodeCounterToLeaveHouse", counter);
-
-			return false;
+			}
+			housesToSkip.push_back(houses[0]);
+			pBlackboard->ChangeData("HousesToSkip", housesToSkip);
+			pBlackboard->ChangeData("pointsOfInterest", pointsOfInterest);
+			pBlackboard->ChangeData("IsInHouse", true);
 		}
-		pBlackboard->ChangeData("Target", outsideTarget);
+	}
+	if (isInHouse)
+	{
+		pBlackboard->ChangeData("Target", LastKnownLocation);
 		return true;
 	}
-
-	if (Elite::Distance(OurAgent.Position, endGoal) < 2.0f)
+	if (isPathFinding)
 	{
-		
-		pBlackboard->ChangeData("CanLeaveHouse", true);
-	}
 
-	if(isPathFinding)
-	{ 
-		//std::cout << "heelo";
+		//pBlackboard->ChangeData("ShootingTarget",endGoal );
+		//pBlackboard->ChangeData("canShoot", bool{ true });
 		currentTarget = pInterFace->NavMesh_GetClosestPathPoint(endGoal);
-		if (Elite::Distance(OurAgent.Position,LastPathPoint)< 2.0f )
+		if (currentTarget != endGoal)
 		{
-			//std::cout << "    yaaay   ";
-			currentTarget = endGoal;
-			pBlackboard->ChangeData("Target", currentTarget);
+			//std::cout << "changes";
+			pBlackboard->ChangeData("LastPathPointPos", currentTarget);
 		}
-		else if (currentTarget == endGoal)
-		{
-			pBlackboard->ChangeData("IsPathFinding", false);
-		}
-		else
-		{
-			pBlackboard->ChangeData("IsPathFinding", true);
-		}
+		pBlackboard->ChangeData("Target", currentTarget);
 		return true;
 	}
-	else if (houses.size() > 0 )
+
+	if (houses.size() > 0)
 	{
-		std::cout << "jw";
 		float closestDistance{ 9999.f };
 		float closestHouse{ 0 };
 		for (int i = 0; i < houses.size(); i++)
@@ -368,28 +426,158 @@ bool HousesInFOV(Elite::Blackboard* pBlackboard)
 		pBlackboard->ChangeData("EndGoalPathFinding", houses[closestHouse].Center);
 
 		currentTarget = pInterFace->NavMesh_GetClosestPathPoint(houses[closestHouse].Center);
-
-		if (Elite::Distance(OurAgent.Position, LastPathPoint) < 2.0f)
+		if (currentTarget != endGoal)
 		{
-			currentTarget = houses[closestHouse].Center;
-		}
-		else
-		{
+			//std::cout << "changes";
 			pBlackboard->ChangeData("LastPathPointPos", currentTarget);
 		}
-
-		if (currentTarget == houses[closestHouse].Center)
-		{
-			pBlackboard->ChangeData("IsPathFinding", false);
-		}
-		else
-		{
-			pBlackboard->ChangeData("IsPathFinding", true);
-		}
 		pBlackboard->ChangeData("Target", currentTarget);
-		//pBlackboard->ChangeData("IsPathFinding", true);
+		pBlackboard->ChangeData("IsPathFinding", true);
 		return true;
 	}
+	return false;
+	//if (isInHouse == false)
+	//{
+	//	pBlackboard->ChangeData("CanLeaveHouse", false);
+
+	//	return false;
+	//}
+
+	//if (Elite::Distance(OurAgent.Position, LastPathPoint) < 2.0f)
+	//{
+	//	currentTarget = houses[closestHouse].Center;
+	//}
+	//else
+	//{
+	//	pBlackboard->ChangeData("LastPathPointPos", currentTarget);
+	//}
+
+	//if (currentTarget == houses[closestHouse].Center)
+	//{
+	//	pBlackboard->ChangeData("IsPathFinding", false);
+	//}
+	//else
+	//{
+	//	pBlackboard->ChangeData("IsPathFinding", true);
+	//}
+	//if (houses.size() > 0)
+	//{
+	//	for (int i = 0; i < housesToSkip.size(); i++)
+	//	{
+	//		if (houses[0].Center == housesToSkip[i].Center)
+	//		{
+	//			return false;
+	//		}
+	//	}
+	//}
+
+	//if (canLeaveHouse)
+	//{ 
+	//	//Elite::Vector2 OutsideGoal{};
+	//	//OutsideGoal.x = houses[0].Center.x;
+	//	//OutsideGoal.y = houses[0].Center.y + houses[0].Size.y;
+
+	//	Elite::Vector2 outsideTarget{ pInterFace->NavMesh_GetClosestPathPoint(LastKnownLocation) };
+
+	//	if (Elite::Distance(OurAgent.Position, outsideTarget) < 2.0f)
+	//	//if(!isInHouse)
+	//	{
+	//			pBlackboard->ChangeData("CanLeaveHouse", false);
+	//			if (housesToSkip.size() == 0)
+	//			{
+	//				housesToSkip.push_back(houses[0]);
+	//				pBlackboard->ChangeData("HousesToSkip", housesToSkip);
+	//			}
+	//			else
+	//			{
+	//				bool IsInVector{ false };
+	//				for (int i = 0; i < housesToSkip.size(); i++)
+	//				{
+	//					if (houses[0].Center == housesToSkip[i].Center)
+	//					{
+	//						IsInVector = true;
+	//					}
+	//				}
+	//				if (!IsInVector)
+	//				{
+	//					housesToSkip.push_back(houses[0]);
+	//					pBlackboard->ChangeData("HousesToSkip", housesToSkip);
+	//				}
+	//			}
+	//			pBlackboard->ChangeData("Target", LastKnownLocation);
+	//		pBlackboard->ChangeData("NodeCounterToLeaveHouse", counter);
+
+	//		return false;
+	//	}
+	//	pBlackboard->ChangeData("Target", outsideTarget);
+	//	return true;
+	//}
+
+	//if (Elite::Distance(OurAgent.Position, endGoal) < 2.0f)
+	//{
+	//	
+	//	pBlackboard->ChangeData("CanLeaveHouse", true);
+	//}
+
+	//if(isPathFinding)
+	//{ 
+	//	//std::cout << "heelo";
+	//	currentTarget = pInterFace->NavMesh_GetClosestPathPoint(endGoal);
+	//	if (Elite::Distance(OurAgent.Position,LastPathPoint)< 2.0f )
+	//	{
+	//		//std::cout << "    yaaay   ";
+	//		currentTarget = endGoal;
+	//		pBlackboard->ChangeData("Target", currentTarget);
+	//	}
+	//	else if (currentTarget == endGoal)
+	//	{
+	//		pBlackboard->ChangeData("IsPathFinding", false);
+	//	}
+	//	else
+	//	{
+	//		pBlackboard->ChangeData("IsPathFinding", true);
+	//	}
+	//	return true;
+	//}
+	//else if (houses.size() > 0 )
+	//{
+	//	std::cout << "jw";
+	//	float closestDistance{ 9999.f };
+	//	float closestHouse{ 0 };
+	//	for (int i = 0; i < houses.size(); i++)
+	//	{
+	//		float distance{ Elite::Distance(houses[i].Center,OurAgent.Position) };
+	//		if (distance < closestDistance)
+	//		{
+	//			closestDistance = distance;
+	//			closestHouse = i;
+	//		}
+	//	}
+	//	pBlackboard->ChangeData("EndGoalPathFinding", houses[closestHouse].Center);
+
+	//	currentTarget = pInterFace->NavMesh_GetClosestPathPoint(houses[closestHouse].Center);
+
+	//	if (Elite::Distance(OurAgent.Position, LastPathPoint) < 2.0f)
+	//	{
+	//		currentTarget = houses[closestHouse].Center;
+	//	}
+	//	else
+	//	{
+	//		pBlackboard->ChangeData("LastPathPointPos", currentTarget);
+	//	}
+
+	//	if (currentTarget == houses[closestHouse].Center)
+	//	{
+	//		pBlackboard->ChangeData("IsPathFinding", false);
+	//	}
+	//	else
+	//	{
+	//		pBlackboard->ChangeData("IsPathFinding", true);
+	//	}
+	//	pBlackboard->ChangeData("Target", currentTarget);
+	//	//pBlackboard->ChangeData("IsPathFinding", true);
+	//	return true;
+	//}
 	return false;
 }
 
@@ -519,7 +707,6 @@ Elite::BehaviorState UseMedKit(Elite::Blackboard* pBlackboard)
 	return  Elite::BehaviorState::Success;
 }
 
-
 Elite::BehaviorState TurnAround(Elite::Blackboard* pBlackboard)
 {
 	AgentInfo OurAgent;
@@ -630,9 +817,10 @@ Elite::BehaviorState ChangeToWander(Elite::Blackboard* pBlackboard)
 	Elite::Vector2 target;
 	float wanderAngle = 0.0f;
 	bool isPathFinding;
+	IExamInterface* pInterFace = nullptr;
 	auto dataAvailable = pBlackboard->GetData("Agent", pAgent) 
 		&&  pBlackboard->GetData("Target", target) && pBlackboard->GetData("Wanderangle",wanderAngle)
-		&& pBlackboard->GetData("IsPathFinding", isPathFinding);
+		&& pBlackboard->GetData("IsPathFinding", isPathFinding) && pBlackboard->GetData("InterFace", pInterFace);
 	if (!dataAvailable)
 	{
 		std::cout << "fail";
@@ -657,6 +845,33 @@ Elite::BehaviorState ChangeToWander(Elite::Blackboard* pBlackboard)
 	target.x = posCircle.x + cos(wanderAngle) * radius;
 	target.y = posCircle.y + sin(wanderAngle) * radius;
 
+
+	//IsInBounds
+	Elite::Vector2 dimensions = pInterFace->World_GetInfo().Dimensions;
+	if (target.x > dimensions.x / 2)
+	{
+		float distance = distanceSingleDigit(target.x, dimensions.x);
+		target.x -= 2 * distance;
+
+	}
+	else if (target.x < -dimensions.x / 2)
+	{
+		float distance = distanceSingleDigit(target.x, -dimensions.x);
+		target.x += 2 * distance;
+	}
+
+	if (target.y > dimensions.y / 2)
+	{
+		float distance = distanceSingleDigit(target.y, dimensions.y);
+		target.x -= 2 * distance;
+	}
+	else if (target.y < -dimensions.y / 2)
+	{
+		float distance = distanceSingleDigit(target.y, -dimensions.y);
+		target.y += 2 * distance;
+	}
+
+	//std::cout << dimensions.x << " , " << dimensions.y << std::endl;
 	pBlackboard->ChangeData("Target", target);
 	pBlackboard->ChangeData("Wanderangle", wanderAngle);
 	pBlackboard->ChangeData("RunMode", RunMode::Seek);

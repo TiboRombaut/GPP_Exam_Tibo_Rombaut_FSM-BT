@@ -17,6 +17,42 @@ void Plugin::Initialize(IBaseInterface* pInterface, PluginInfo& info)
 	info.Student_LastName = "Bar";
 	info.Student_Class = "2DAEx";
 
+	//points
+//finding the points of interest in the navmesh and storing it in a vector of points
+//start point left top
+	Elite::Vector2 dimensions = m_pInterface->World_GetInfo().Dimensions;
+	float travelDistance{ 10.0f };
+	Elite::Vector2 point{ -dimensions.x / 2/* - travelDistance*/,dimensions.y / 2 /*- travelDistance / 2*/ };
+	for (int i = 1; i <= 965; i++)
+	{
+		Elite::Vector2 result = m_pInterface->NavMesh_GetClosestPathPoint(point);
+		//m_Points.push_back(point);
+
+		if (result != point)
+		{
+			bool isInVector{ false };
+			for (int i = 0; i < m_Points.size(); i++)
+		{
+				if (result == m_Points[i].location)
+				{
+					isInVector = true;
+				}
+			}
+			if (!isInVector)
+			{
+				std::cout << i << ": " << point.x << " , " << point.y << std::endl;
+				m_Points.push_back(PointsOfInterestIsSkippable{ result,false });
+			}
+		}
+		point.x += travelDistance;
+
+		if (i % 31 == 0)
+		{
+			point.x = -dimensions.x / 2;// -travelDistance;
+			point.y -= travelDistance;
+		}
+	}
+
 	//Called when the plugin is loaded
 	Elite::Blackboard* pBlackboard = new Elite::Blackboard();
 	pBlackboard->AddData("Agent", m_pInterface->Agent_GetInfo());
@@ -29,37 +65,44 @@ void Plugin::Initialize(IBaseInterface* pInterface, PluginInfo& info)
 	pBlackboard->AddData("HousesInFOV", GetHousesInFOV());
 	pBlackboard->AddData("IsPathFinding", bool{ false });//stops when the target is the center then he can save the last point
 	pBlackboard->AddData("EndGoalPathFinding", Elite::Vector2{ 10000,10000 });
-	pBlackboard->AddData("LastPathPointPos", Elite::Vector2{});
+	pBlackboard->AddData("LastPathPointPos", Elite::Vector2{10000.0f,10000.0f});
 	pBlackboard->AddData("IsInHouse", bool{ false });
 	pBlackboard->AddData("CanLeaveHouse", bool{ false });
 	pBlackboard->AddData("HousesToSkip", m_housesToSkip);
 	pBlackboard->AddData("NodeCounterToLeaveHouse", int{ 0 });
-	pBlackboard->AddData("LastKnowLocationOutsideHoude", Elite::Vector2{ 0.0f,0.0f });
+	pBlackboard->AddData("LastKnowLocationOutsideHoude", Elite::Vector2{ 1000.0f,1000.0f });
 	pBlackboard->AddData("ShootingTarget", Elite::Vector2{ 0.0f,0.0f });
 	pBlackboard->AddData("canShoot", bool{ false });
 	pBlackboard->AddData("AllowedToShoot", bool {false});
 	pBlackboard->AddData("Bitten", bool{ false });
 	pBlackboard->AddData("MaxHealth" ,float{ 10.0f });
 	pBlackboard->AddData("MaxEnergy", float{ 10.0f });
+	pBlackboard->AddData("HouseEntrance", Elite::Vector2{ 0.0f,0.0f });
+	pBlackboard->AddData("pointsOfInterest", m_Points);
 
 
-	//m_pBT = new BehaviorTree(pBlackboard,
-	//	new BehaviorSelector({
-	//		new BehaviorSequence({
-	//			new BehaviorConditional(CanPickUpItem),
-	//			new BehaviorAction(AddToInventory)
-	//			}),
-	//		new BehaviorSequence({
-	//			new BehaviorConditional(IsInHouse),
-	//			new BehaviorAction(ChangeToSeek)
-	//			}),
-	//		new BehaviorSequence({
-	//			new BehaviorConditional(HousesInFOV),
-	//			new BehaviorAction(ChangeToSeek)
-	//			}),
-	//		new BehaviorAction(ChangeToWander)
-	//	})
-	//);
+	m_pBT = new BehaviorTree(pBlackboard,
+		new BehaviorSelector({
+			//new BehaviorSequence({
+			//	new BehaviorConditional(CanPickUpItem),
+			//	new BehaviorAction(AddToInventory)
+			//	}),
+
+			new BehaviorSequence({
+				new BehaviorConditional(IsInHouse),
+				new BehaviorAction(ChangeToSeek)
+				}),
+			new BehaviorSequence({
+				new BehaviorConditional(HousesInFOV),
+				new BehaviorAction(ChangeToSeek)
+				}),
+			new BehaviorSequence({
+				new BehaviorConditional(NothingInFOV),
+				new BehaviorAction(ChangeToSeek)
+				}),
+			new BehaviorAction(ChangeToWander)
+		})
+	);
 	//m_pBT = new BehaviorTree(pBlackboard,
 	//	new BehaviorSelector({
 	//		new BehaviorSequence(
@@ -96,50 +139,49 @@ void Plugin::Initialize(IBaseInterface* pInterface, PluginInfo& info)
 	//		//new BehaviorAction(ChangeToWander)
 	//		})
 	//);
-	m_pBT = new BehaviorTree(pBlackboard,
-		new BehaviorSelector({
-			new BehaviorSequence(
-				{
-					new BehaviorConditional(NeedsFood),
-					new BehaviorAction(UseFoodKit)
-				}),
-			new BehaviorSequence(
-				{
-					new BehaviorConditional(NeedsHealth),
-					new BehaviorAction(UseMedKit)
-				}),
-			new BehaviorSequence({
-				new BehaviorConditional(CanPickUpItem),
-				new BehaviorAction(AddToInventory)
-			}), // hier ergens een fout dat ihj niet omdraait wss iets daje terug op false zet nu geen goesting om te zoeken xD
-			new BehaviorSequence({
-							new BehaviorConditional(IsInHouse),
-							new BehaviorAction(ChangeToSeek)
-							}),
-			new BehaviorSequence({
-					new BehaviorConditional(HousesInFOV),
-					new BehaviorAction(ChangeToSeek)
-			}),
-			//new BehaviorSequence(
-			//{
-			//	new BehaviorConditional(IsBittenAndHasAmmo),
-			//	new BehaviorAction(TurnAround)
-			//}),
-			new BehaviorSequence({
-				new BehaviorConditional(EnemyInFOV),
-				new BehaviorSequence
-				(
-					{
-						new BehaviorConditional(HasAmmo),
-						new BehaviorAction(Shoot)
-						//new BehaviorAction(ChangeToEvade)
-					}
-				)
-			}),
-				new BehaviorAction(ChangeToWander)
-		})
-	);
-	std::cout << "test";
+	//m_pBT = new BehaviorTree(pBlackboard,
+	//	new BehaviorSelector({
+	//		new BehaviorSequence(
+	//			{
+	//				new BehaviorConditional(NeedsFood),
+	//				new BehaviorAction(UseFoodKit)
+	//			}),
+	//		new BehaviorSequence(
+	//			{
+	//				new BehaviorConditional(NeedsHealth),
+	//				new BehaviorAction(UseMedKit)
+	//			}),
+	//		new BehaviorSequence({
+	//			new BehaviorConditional(CanPickUpItem),
+	//			new BehaviorAction(AddToInventory)
+	//		}), // hier ergens een fout dat ihj niet omdraait wss iets daje terug op false zet nu geen goesting om te zoeken xD
+	//		new BehaviorSequence({
+	//						new BehaviorConditional(IsInHouse),
+	//						new BehaviorAction(ChangeToSeek)
+	//						}),
+	//		new BehaviorSequence({
+	//				new BehaviorConditional(HousesInFOV),
+	//				new BehaviorAction(ChangeToSeek)
+	//		}),
+	//		//new BehaviorSequence(
+	//		//{
+	//		//	new BehaviorConditional(IsBittenAndHasAmmo),
+	//		//	new BehaviorAction(TurnAround)
+	//		//}),
+	//		new BehaviorSequence({
+	//			new BehaviorConditional(EnemyInFOV),
+	//			new BehaviorSequence
+	//			(
+	//				{
+	//					new BehaviorConditional(HasAmmo),
+	//					new BehaviorAction(Shoot)
+	//					//new BehaviorAction(ChangeToEvade)
+	//				}
+	//			)
+	//		}),
+	//			new BehaviorAction(ChangeToWander)
+	//	})
+	//);
 
 }
 
@@ -162,7 +204,7 @@ void Plugin::InitGameDebugParams(GameDebugParams& params)
 //	params.LevelFile = "LevelTwo.gppl";
 	params.AutoFollowCam = true; //Automatically follow the AI? (Default = true)
 	params.RenderUI = true; //Render the IMGUI Panel? (Default = true)
-	params.SpawnEnemies = true; //Do you want to spawn enemies? (Default = true)
+	params.SpawnEnemies = false; //Do you want to spawn enemies? (Default = true)
 	params.EnemyCount = 20; //How many enemies? (Default = 20)
 	params.GodMode = false; //GodMode > You can't die, can be usefull to inspect certain behaviours (Default = false)
 	params.AutoGrabClosestItem = true; //A call to Item_Grab(...) returns the closest item that can be grabbed. (EntityInfo argument is ignored)
@@ -465,7 +507,28 @@ SteeringPlugin_Output Plugin::UpdateSteering(float dt)
 void Plugin::Render(float dt) const
 {
 	//This Render function should only contain calls to Interface->Draw_... functions
+	std::vector<PointsOfInterestIsSkippable> pointsOfInterest;
+
+	m_pBT->GetBlackboard()->GetData("pointsOfInterest", pointsOfInterest);
+	for (int i = 0; i < m_Points.size(); i++)
+	{
+		if (pointsOfInterest[i].canSkip)
+		{
+			m_pInterface->Draw_SolidCircle(m_Points[i].location, .7f, { 0,0 }, { 0, 1, 0 });
+		}
+		else
+		{
+			m_pInterface->Draw_SolidCircle(m_Points[i].location, .7f, { 0,0 }, { 0, 0, 1 });
+		}
+	}
 	m_pInterface->Draw_SolidCircle(m_Target, .7f, { 0,0 }, { 1, 0, 0 });
+//	m_pInterface->Draw_SolidCircle(m_Target, .7f, { 0,0 }, { 1, 0, 0 });
+	//Elite::Vector2 result = m_pInterface->World_GetInfo().Dimensions;
+	//result /= 2;
+	//std::vector<Elite::Vector2*> points{ new Elite::Vector2{result.x,result.y },new Elite::Vector2{result.x,-result.y },new Elite::Vector2{-result.x,-result.y },new Elite::Vector2{-result.x,result.y } };
+	//std::vector<Elite::Vector2*> points{ new Elite::Vector2{200.0f,200.0f },new Elite::Vector2{200.0f,-200.0f },new Elite::Vector2{-200.0f,-200.0f },new Elite::Vector2{-200.0f,200.0f } };
+
+	//m_pInterface->Draw_SolidPolygon(points[0], 4, Elite::Vector3{ 1, 0, 0 });
 }
 
 vector<HouseInfo> Plugin::GetHousesInFOV() const

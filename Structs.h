@@ -11,3 +11,9 @@ struct InventorySlots
 	eItemType type;
 	int amount;
 };
+
+struct PointsOfInterestIsSkippable
+{
+	Elite::Vector2 location;
+	bool canSkip;
+};
