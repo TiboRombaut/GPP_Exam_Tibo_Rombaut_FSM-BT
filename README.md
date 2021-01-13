@@ -33,6 +33,7 @@ The pro's and cons make it obvious that FSM is perfect to make small AI but from
 
 The power of a HFSM are super states, that is in general a group of states, these super states also can have transitions which allows you to prevent redundant transitions bu applying him to the supder states the transitions are called generalized transitions, you apply these transistions once to the super state instead of applying them individually to each state.
 ![differenceFSM_HFSM](/FSM_HFSM.JPG)
+
 here is a simple example of clustering vs a super state, this is only with 3 states and it is already way more readable. The bigger you're FSM gets the more you will need this.
 because HFSM uses state nesting this introduces behavior inheritance and this allows substates to mutate by adding new behavior by adding new states,transitions or reactions(also known as internal transitions) for events that are not recongized by super states. Or by overriding the existing behavior.
 All this makes it possible to reuse transitions. But it is still not optimnal the problem is that reusing transitions isn't trivial to achieve and it requires a lot of thaught when you have to create logic for many different contexts.
