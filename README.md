@@ -4,7 +4,7 @@
 
 <h3>preface
 
-<h5>Hello in this project I wanted to learn the difference between Finite state machines and behaviour trees. I also wanted to see what te pros's and cons are of each Desicion making structure and also I want to make my own implementation of a combination between the 2 structures, I will also give some examples on how you can implement it.
+Hello in this project I wanted to learn the difference between Finite state machines and behaviour trees. I also wanted to see what te pros's and cons are of each Desicion making structure and also I want to make my own implementation of a combination between the 2 structures, I will also give some examples on how you can implement it.
 
 <h3>Finite State machine(FSM)
 
@@ -103,6 +103,3 @@ When I have time I will definitly go more in depth with BT because it is a reall
 With al the knowledge I gathered during this project I am definitly sure that by using this hybrid it is easier to make an good working and readable AI.
 In the future I also would be interested to learn on how to make the BT -> FSM part of this project because in my knowledge this is also a powerfull structure but would be better to use on more elaborate AI and not simple ones.
 Making decision making structures using provided engine like UE or unity seems interesting to me because we haven't actually gone in depth with that but I have seen that there is a presence of BT and FSM in UE templating.
-
-
-
