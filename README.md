@@ -2,9 +2,9 @@
 
 <h2>Combination Finite State Machines and Behaviour Trees
 
-<h3>preface
+<h3>preface</h3>
 
-<h6>Hello in this project I wanted to learn the difference between Finite state machines and behaviour trees. I also wanted to see what te pros's and cons are of each Desicion making structure and also I want to make my own implementation of a combination between the 2 structures, I will also give some examples on how you can implement it.
+Hello in this project I wanted to learn the difference between Finite state machines and behaviour trees. I also wanted to see what te pros's and cons are of each Desicion making structure and also I want to make my own implementation of a combination between the 2 structures, I will also give some examples on how you can implement it.
 
 <h3>Finite State machine(FSM)
 
