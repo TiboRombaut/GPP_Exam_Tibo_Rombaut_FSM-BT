@@ -1,6 +1,6 @@
-ResearchProjectGPP
+<h1>ResearchProjectGPP
 
-Combination Finite State Machines and Behaviour Trees
+<h3>Combination Finite State Machines and Behaviour Trees
 
 preface
 
